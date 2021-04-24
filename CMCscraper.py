@@ -8,7 +8,6 @@ import json
 import time
 import os
 
-os.system('reset')
 currentFilePath = pathlib.Path(__file__).parent.absolute()
 
 cmc = requests.get('https://coinmarketcap.com')
@@ -34,7 +33,7 @@ def GetCoinPageSource(coin):
         browser.get(f"https://coinmarketcap.com/currencies/{coin}/historical-data/")
         page = browser.page_source
     except:
-        raise Exception(f"[CMCscraper] Coin ({coin}) not found.")
+        print("[CMCscraper] Unexpected error:", sys.exc_info()[0])
         page = None
     finally:
         browser.quit()
@@ -51,7 +50,7 @@ def ScrapePage(page_source):
     for header in data[0]:
         i+=1
         name = header.text_content()
-        print('%d : %s' % (i,name))
+        # print('%d : %s' % (i,name))
         dataList.append((name, []))
 
     for i in range(1, len(data)):
@@ -73,19 +72,22 @@ def ScrapePage(page_source):
 
 def ScrapeAll(folderpath=currentFilePath / "data"):
     
-    browser = webdriver.Chrome(executable_path='/Users/elcoms/Desktop/CryptoSummary/chromedriver')
+    browser = webdriver.Chrome(executable_path=currentFilePath / 'chromedriver')
 
-    for coin in coins:
-        browser.get(f"https://coinmarketcap.com/currencies/{coin}/historical-data/")
-        data = ScrapePage(browser.page_source)
-        WriteToFile(data, folderpath / coin)
+    for coin in coins.values():
+        # browser.get(f"https://coinmarketcap.com/currencies/{coin}/historical-data/")
+        # data = ScrapePage(browser.page_source)
+        # WriteToFile(data, folderpath, coin)
+        print(coin)
     
     browser.quit()
 
-def WriteToFile(data, filepath, filename):
+def WriteToFile(data, folderpath, filename):
     df = pd.DataFrame(data)
-    filepath.mkdir(parents=True, exist_ok=True)
-    df.to_csv(filepath / filename, index=False)
+    folderpath.mkdir(parents=True, exist_ok=True)
+    filename += ".csv"
+    df.to_csv(folderpath / filename, index=False)
 
-dataDict = ScrapePage(GetCoinPageSource("bitcoin"))
-WriteToFile(dataDict, pathlib.Path(__file__).parent.absolute() / "data", "sample.csv")
+# test case
+# dataDict = ScrapePage(GetCoinPageSource("bitcoin"))
+# WriteToFile(dataDict, pathlib.Path(__file__).parent.absolute() / "data", "sample")
