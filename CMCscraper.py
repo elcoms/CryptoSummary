@@ -6,7 +6,6 @@ import requests
 import pathlib
 import json
 import time
-import os
 
 currentFilePath = pathlib.Path(__file__).parent.absolute()
 
